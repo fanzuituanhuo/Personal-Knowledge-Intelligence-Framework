@@ -1,22 +1,25 @@
 # AI Research Assistant
 
-一个以本地 Ollama 模型为起点的科研助手骨架。当前已完成 LLM 抽象、Ollama 后端和本地 Qwen3 调用测试。
+本地优先的科研 AI 助手：在通用能力层（LLM、Embedding、检索、Agent）之上，挂接领域知识库插件（如 NTC 论文 / 概念 / 公式）。硬件目标为 Mac + 约 24G 统一内存；先 CLI 跑通，再补 Web。
+
+当前已落地：
+
+- **LLM**：Ollama + 本地 `qwen3:14b`
+- **Embedding**：`BAAI/bge-m3`（sentence-transformers）
+
+检索、向量库、知识库插件与 Agent 仍在规划中，见 [docs/PLAN.md](docs/PLAN.md)。
 
 ## 当前结构
 
 ```text
-src/ai_research_assistant/core/llm/
-├── base.py        # 统一 LLM 接口
-├── config.py      # 模型与推理配置
-├── factory.py     # LLM 工厂
-└── ollama_llm.py  # Ollama 实现
+src/ai_research_assistant/core/
+├── llm/           # 大模型抽象与 Ollama 实现
+└── embedding/     # 向量模型抽象与 BGE-M3 实现
 
 tests/
-├── conftest.py    # pytest 的 llm fixture
-└── test_llm.py    # Qwen3 冒烟测试
+├── test_llm.py
+└── test_embedding.py
 ```
-
-后续的 embedding、检索、知识库与 Agent 规划见 [docs/PLAN.md](docs/PLAN.md)。
 
 ## 环境准备
 
