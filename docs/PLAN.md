@@ -9,7 +9,7 @@
 ## 一、仓库顶层结构
 
 ```
-personal_ai_assistant/          # GitHub 仓库根目录
+Personal-Knowledge-Intelligence-Framework/   # GitHub 仓库根目录
 │
 ├── README.md                   # 项目简介与快速开始
 ├── pyproject.toml              # 依赖、脚本、包配置
