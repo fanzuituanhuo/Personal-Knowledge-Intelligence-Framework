@@ -2,7 +2,7 @@
 
 > 目标：从 0 搭建一个「通用科研能力框架 + 领域知识库插件」的本地 AI 助手。
 > 硬件：Mac M5 Pro，24G 统一内存。
-> 原则：先 CLI 跑通，再补 Web；先本地模型，再考虑 API fallback。
+> 原则：先 CLI 跑通，再补 Web；模型调用以本地为主，同时支持外接云端 API（同一套 `BaseLLM` / 工厂接口切换）。
 
 ---
 
@@ -64,7 +64,7 @@ personal_ai_assistant/          # GitHub 仓库根目录
 
 | 模块 | 职责 |
 |------|------|
-| `llm/` | 大语言模型接口与实现（Ollama / API fallback） |
+| `llm/` | 大语言模型接口与实现：默认 Ollama 本地模型，也可外接 OpenAI 兼容等云端 API |
 | `embedding/` | 文本向量模型接口与实现 |
 | `retrieval/` | 语义检索、混合检索、重排序、上下文构造 |
 | `memory/` | 对话历史、工作记忆、长期事实记忆 |
@@ -257,8 +257,9 @@ personal_ai_assistant/          # GitHub 仓库根目录
 | 网页解析 | crawl4ai / jina reader | 获取正文干净 |
 | Embedding | BAAI/bge-m3 | 多语言，24G 内存可跑 |
 | 向量库 | ChromaDB | 轻量，按 collection 隔离 |
-| LLM | Ollama | Mac 最方便 |
-| 推荐模型 | qwen2.5:14b / llama3.1:8b | 中英文平衡 |
+| LLM（本地） | Ollama | Mac 最方便，默认路径 |
+| LLM（外接） | OpenAI 兼容 API | 需要更强模型或本机资源不够时切换；密钥走 `.env` |
+| 推荐本地模型 | qwen3:14b 等 | 中英文平衡，适配约 24G 统一内存 |
 | API | FastAPI | 异步、文档自动生成 |
 | 前端 | 先用纯 HTML + JS | 快速验证 |
 | 测试 | pytest | 标准选择 |
@@ -268,7 +269,7 @@ personal_ai_assistant/          # GitHub 仓库根目录
 ## 五、命名约定
 
 1. 抽象类：`BaseXxx`
-2. 实现类：用技术命名，如 `OllamaLLM`、`ChromaVectorStore`
+2. 实现类：用技术命名，如 `OllamaLLM`、`OpenAILLM`、`ChromaVectorStore`
 3. 知识库 collection 命名：`{domain}/{entity_type}`，例如 `ntc/papers`
 4. 配置项：小写下划线，支持 `.env`
 5. 每个核心类至少一个测试
