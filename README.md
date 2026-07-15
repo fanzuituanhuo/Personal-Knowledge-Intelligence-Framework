@@ -35,7 +35,7 @@ Atlas 把「可复用的智能能力」和「可替换的知识域」拆开：
 - **LLM**：Ollama + 本地 `qwen3:14b`（外接 API 实现待补）
 - **Embedding**：`BAAI/bge-m3`（sentence-transformers）
 - **向量库**：FAISS（`database/vector_store/faiss_store.py`）
-- **检索**：`BaseRetriever` 抽象已定义，具体实现待补
+- **检索**：`DenseRetriever`（FAISS 后端）+ `SemanticRetriever`（自动 embed），支持 metadata 过滤
 
 规划中：记忆、Agent、知识库插件、API / 前端。
 
@@ -48,14 +48,21 @@ src/ai_research_assistant/
 ├── core/
 │   ├── llm/           # 大模型抽象与 Ollama 实现
 │   ├── embedding/     # 向量模型抽象与 BGE-M3 实现
-│   └── retrieval/     # 检索抽象
+│   └── retrieval/     # 检索抽象与实现
+│       ├── base.py
+│       ├── config.py
+│       ├── factory.py
+│       ├── dense_retriever.py
+│       └── semantic_retriever.py
 └── database/
     └── vector_store/  # 向量存储抽象与 FAISS 实现
 
 tests/
 ├── test_llm.py
 ├── test_embedding.py
-└── test_faiss_store.py
+├── test_faiss_store.py
+├── test_retrieval.py
+└── test_semantic_retriever.py
 ```
 
 ## 快速开始
@@ -85,14 +92,18 @@ uv run python tests/test_embedding.py
 # FAISS 向量库冒烟
 uv run python tests/test_faiss_store.py
 
-# 全量 pytest（LLM 测试除外）
-uv run pytest -q tests/test_embedding.py tests/test_faiss_store.py
+# 检索冒烟
+uv run python tests/test_retrieval.py
+uv run python tests/test_semantic_retriever.py
+
+# 全量 pytest（LLM 测试除外；OMP_NUM_THREADS=1 避免 macOS 下依赖冲突）
+OMP_NUM_THREADS=1 uv run pytest -q tests/test_embedding.py tests/test_faiss_store.py tests/test_retrieval.py tests/test_semantic_retriever.py
 
 # 全量 pytest（需 ollama serve）
-uv run pytest -q
+OMP_NUM_THREADS=1 uv run pytest -q
 ```
 
-预期：LLM 测试除外 `13 passed`；开启 Ollama 后全量 `15 passed`。
+预期：LLM 测试除外 `23 passed`；开启 Ollama 后全量 `25 passed`。
 
 ### 最小调用示例
 
@@ -122,6 +133,30 @@ ids = store.add(
 
 query = embedding.embed_query("Atlas 是什么？")
 results = store.search(query, top_k=2)
+print(results)
+```
+
+### 检索最小示例
+
+```python
+from ai_research_assistant.core.embedding.config import EmbeddingConfig
+from ai_research_assistant.core.embedding.factory import create_embedding
+from ai_research_assistant.core.retrieval.config import RetrieverConfig
+from ai_research_assistant.core.retrieval.factory import create_retriever
+from ai_research_assistant.core.retrieval.semantic_retriever import SemanticRetriever
+from ai_research_assistant.database.vector_store.factory import create_vector_store
+
+embedding = create_embedding(EmbeddingConfig())
+store = create_vector_store(embedding)
+retriever = create_retriever(RetrieverConfig(provider="dense"), store)
+semantic = SemanticRetriever(embedding_model=embedding, retriever=retriever)
+
+semantic.add(
+    documents=["Atlas 是本地优先的知识框架。", "它支持 Ollama 本地模型。"],
+    metadata=[{"source": "README"}, {"source": "README"}],
+)
+
+results = semantic.retrieve("Atlas 是什么？", top_k=2)
 print(results)
 ```
 

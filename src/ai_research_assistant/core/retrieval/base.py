@@ -22,7 +22,7 @@ class BaseRetriever(ABC):
         embeddings: list[list[float]],
         metadata: list[dict[str, Any]] | None = None,
         ids: list[str] | None = None,
-    ) -> None:
+    ) -> list[str]:
         """
         Add documents and their embeddings into the index.
 
@@ -45,8 +45,10 @@ class BaseRetriever(ABC):
             ids:
                 Stable document identifiers, same length as ``documents``
                 when provided. Used for upsert and later ``delete``.
-                When omitted, the implementation generates IDs internally;
-                those IDs are only usable if returned by ``retrieve``.
+                When omitted, the implementation generates IDs internally.
+
+        Returns:
+            IDs of the added documents, in the same order as the input.
         """
         pass
 
@@ -56,9 +58,20 @@ class BaseRetriever(ABC):
         self,
         query_embedding: list[float],
         top_k: int = 5,
+        metadata_filter: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Retrieve the most relevant documents.
+
+        Args:
+            query_embedding:
+                Vector representation of the query.
+
+            top_k:
+                Maximum number of results to return.
+
+            metadata_filter:
+                Optional metadata conditions used to restrict search.
 
         Returns:
             [
@@ -77,9 +90,12 @@ class BaseRetriever(ABC):
     def delete(
         self,
         ids: list[str],
-    ) -> None:
+    ) -> int:
         """
         Delete documents from retrieval database.
+
+        Returns:
+            Number of documents successfully deleted.
         """
         pass
 

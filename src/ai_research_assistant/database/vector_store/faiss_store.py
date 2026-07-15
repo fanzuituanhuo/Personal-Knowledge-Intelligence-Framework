@@ -39,7 +39,7 @@ class FAISSVectorStore(BaseVectorStore):
         self._index = faiss.IndexIDMap2(base_index) # 真实存储的向量索引
 
         # internal FAISS ID -> stored record
-        self._records: dict[int, dict[str, Any]] = {}
+        self._records: dict[int, dict[str, Any]] = {} #从内部整数id到存储的记录的映射，记录包含外部id、文本和元数据
 
         # user-facing string ID -> internal FAISS integer ID
         self._external_to_internal: dict[str, int] = {}
@@ -69,6 +69,7 @@ class FAISSVectorStore(BaseVectorStore):
             ids=ids,
         )
 
+        # 如果文档列表为空，则返回空列表
         if not documents:
             return []
 
@@ -110,7 +111,7 @@ class FAISSVectorStore(BaseVectorStore):
 
         self._next_internal_id += record_count
 
-        return ids
+        return ids 
 
     def search(
         self,
@@ -329,6 +330,7 @@ class FAISSVectorStore(BaseVectorStore):
         self._records = records
         self._external_to_internal = external_to_internal
 
+
     def _prepare_embeddings(
         self,
         embeddings: list[list[float]],
@@ -347,13 +349,13 @@ class FAISSVectorStore(BaseVectorStore):
         if not np.isfinite(vectors).all():
             raise ValueError("embeddings contain NaN or infinite values")
 
-        norms = np.linalg.norm(vectors, axis=1)
+        norms = np.linalg.norm(vectors, axis=1) # 计算向量的范数
 
         if np.any(norms == 0):
             raise ValueError("embeddings must not contain zero vectors")
 
-        vectors = np.ascontiguousarray(vectors)
-        faiss.normalize_L2(vectors)
+        vectors = np.ascontiguousarray(vectors) # 将向量转换为连续的内存布局
+        faiss.normalize_L2(vectors) # 归一化向量
 
         return vectors
 
@@ -391,6 +393,7 @@ class FAISSVectorStore(BaseVectorStore):
 
         return query_vector
 
+    # 验证添加输入的合法性
     def _validate_add_inputs(
         self,
         documents: list[str],
@@ -398,7 +401,7 @@ class FAISSVectorStore(BaseVectorStore):
         metadata: list[dict[str, Any]] | None,
         ids: list[str] | None,
     ) -> None:
-        document_count = len(documents)
+        document_count = len(documents) # 文档数量
 
         if len(embeddings) != document_count:
             raise ValueError(
@@ -423,6 +426,8 @@ class FAISSVectorStore(BaseVectorStore):
         ):
             raise TypeError("all metadata items must be dictionaries")
 
+
+
     def _validate_external_ids(self, ids: list[str]) -> None:
         if any(not isinstance(external_id, str) for external_id in ids):
             raise TypeError("all IDs must be strings")
@@ -444,11 +449,12 @@ class FAISSVectorStore(BaseVectorStore):
                 f"IDs already exist in the vector store: {duplicate_ids}"
             )
 
+
     def _generate_external_id(self) -> str:
-        external_id = uuid4().hex
+        external_id = uuid4().hex # 随机生成一个32位十六进制字符串
 
         while external_id in self._external_to_internal:
-            external_id = uuid4().hex
+            external_id = uuid4().hex # 如果生成的id已经存在，则重新生成
 
         return external_id
 
