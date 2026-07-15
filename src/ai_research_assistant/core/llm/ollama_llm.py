@@ -5,7 +5,6 @@ This module provides local LLM inference through Ollama,
 such as Qwen3.5, Llama, DeepSeek, etc.
 """
 
-from typing import List, Dict, Optional
 import requests
 
 from .base import BaseLLM
@@ -42,15 +41,15 @@ class OllamaLLM(BaseLLM):
         self.max_tokens = max_tokens
         self.think = think
         # 最近一次调用的思考文本；仅 think=True 时会填充。
-        self.last_thinking: Optional[str] = None
+        self.last_thinking: str | None = None
 
 
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """
         Generate response from a single prompt.
@@ -82,9 +81,9 @@ class OllamaLLM(BaseLLM):
 
     def chat(
         self,
-        messages: List[Dict[str, str]],
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        messages: list[dict[str, str]],
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """
         Chat generation through Ollama API.

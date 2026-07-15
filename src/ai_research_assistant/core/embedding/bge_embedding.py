@@ -1,4 +1,3 @@
-from typing import List
 from sentence_transformers import SentenceTransformer
 
 from .base import BaseEmbedding
@@ -34,7 +33,7 @@ class BGEEmbedding(BaseEmbedding):
 
 
 
-    def embed(self, texts: List[str]) -> List[List[float]]:
+    def embed(self, texts: list[str]) -> list[list[float]]:
         """
         Batch encode documents
 
@@ -55,7 +54,7 @@ class BGEEmbedding(BaseEmbedding):
         return embeddings.tolist()
 
 
-    def embed_query(self, query: str) -> List[float]:
+    def embed_query(self, query: str) -> list[float]:
         """
         Encode user query
         """
@@ -66,3 +65,10 @@ class BGEEmbedding(BaseEmbedding):
         )
 
         return embedding.tolist()
+
+    @property
+    def dimension(self) -> int:
+        """
+        Return the dimension of the embedding model
+        """
+        return self.model.get_embedding_dimension()

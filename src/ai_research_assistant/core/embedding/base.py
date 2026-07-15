@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 
 class BaseEmbedding(ABC):
@@ -11,7 +10,7 @@ class BaseEmbedding(ABC):
     """
 
     @abstractmethod
-    def embed(self, texts: List[str]) -> List[List[float]]:
+    def embed(self, texts: list[str]) -> list[list[float]]:
         """
         将文本转换为向量
 
@@ -24,7 +23,7 @@ class BaseEmbedding(ABC):
                 ]
 
         Returns:
-            List[List[float]]:
+            list[list[float]]:
                 embedding向量列表，例如：
                 [
                     [0.12, 0.34, ...],
@@ -35,7 +34,7 @@ class BaseEmbedding(ABC):
 
 
     @abstractmethod
-    def embed_query(self, query: str) -> List[float]:
+    def embed_query(self, query: str) -> list[float]:
         """
         将查询文本转换为向量
 

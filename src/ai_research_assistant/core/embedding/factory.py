@@ -45,3 +45,5 @@ def create_embedding(
         model_name=config.model_name,
         device=config.device,
     )
+
+
